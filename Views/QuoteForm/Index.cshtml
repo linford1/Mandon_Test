@@ -1,0 +1,99 @@
+﻿<head>
+      
+</head>
+
+
+@model TestWebsite.Models.Quote.QuoteViewModel
+ 
+<form asp-action="CreateQuote"
+      asp-controller="QuoteForm"
+      data-ajax="true" data-ajax-method="POST"
+      data-ajax-success="createQuoteSuccess"
+      id="createQuoteForm">
+
+    @Html.AntiForgeryToken()
+
+    <div class="row">
+        <div class="col form-group" > 
+            @Html.LabelFor(x => x.Quote.ContactName)
+            <div class="sub-row" style="display: flex;">
+                @Html.DropDownListFor(x => x.Quote.ContactTitle, new SelectList(Enum.GetValues(typeof(TestWebsite.Enums.GeneralEnum.Title))), "Select Title")
+                @Html.TextBoxFor(x => x.Quote.ContactName, new { @class = "form-control" })
+            </div>
+        </div>
+        <div class="col form-group">
+            @Html.LabelFor(x => x.Quote.EmailAddress)
+            @Html.TextBoxFor(x => x.Quote.EmailAddress, new { @class = "form-control", @type = "email" })
+        </div>
+    </div>
+    <div class="row">
+        <div class="col form-group">
+            @Html.LabelFor(x => x.Quote.TotalSize)
+            @Html.TextBoxFor(x => x.Quote.TotalSize, new { @class = "form-control", @type = "number", @step = "any" })
+        </div>
+        <div class="col form-group">
+            @Html.LabelFor(x => x.Quote.TotalRebuildCost)
+            @Html.TextBoxFor(x => x.Quote.TotalRebuildCost, new { @class = "form-control", @type = "number", @step = "0.10" })
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col form-group">
+            @Html.Label("Flat Roof cover needed?")
+            @Html.CheckBox("Flat Roof",false,new{@id = "FlatRoofCheckBox"})
+            @Html.TextBoxFor(x => x.Quote.RoofSize,htmlAttributes: new { @class = "form-control",@id = "FlatRoofSize", @type = "number", @step = "any",@hidden = true})
+        </div> 
+    </div>
+
+    <button id="submitQuoteFormBtn" type="submit"     class="btn btn-primary">Submit</button>
+</form> 
+
+<script type = "text/javascript">
+
+    $( document ).ready(function() {
+        $('#submitQuoteFormBtn').on('click', function (e) {
+            e.preventDefault(); //prevent the form from being submitted
+
+            $(this).prop('disabled', true);
+             
+            var form = $('#createQuoteForm');
+            $.ajax({
+                url: form.get(0).action,
+                type: form.get(0).method,
+                data: form.serialize(),
+                success: function (result) {
+                    $('#submitQuoteFormBtn').removeAttr('disabled');  
+                }
+            });
+        });
+
+        $(document).ajaxSuccess(function( event, xhr, settings ) {
+            var splitResponse = xhr.responseText.split(",")
+            var OS = splitResponse[2].split(":") 
+
+            console.log("User Agent: " +OS[1] + ", " + splitResponse[3].replace("}",""));
+
+            alert("We have recieved your form")
+            document.getElementById("createQuoteForm").reset();
+        });
+
+        $("#FlatRoofCheckBox").change(function () {
+            if (this.checked) {
+                $("#FlatRoofSize").attr("hidden", false)
+            }
+            else {
+                $("#FlatRoofSize").val("")
+                $("#FlatRoofSize").attr("hidden","hidden")
+            }
+        });
+    });
+  </script>
+
+<style>
+    Button#submitQuoteFormBtn:hover {
+        background-color: #4c9ed9;
+    }
+</style>
+ 
+
+
